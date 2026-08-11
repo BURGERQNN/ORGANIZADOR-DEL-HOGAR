@@ -1,0 +1,9 @@
+{
+  "name": "casita-familia",
+  "private": true,
+  "scripts": {
+    "dev:api": "npm run dev --prefix apps/api",
+    "dev:web": "npm run dev --prefix apps/web",
+    "install:all": "npm install --prefix apps/api && npm install --prefix apps/web"
+  }
+}
