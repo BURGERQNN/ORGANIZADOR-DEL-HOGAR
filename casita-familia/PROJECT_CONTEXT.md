@@ -58,7 +58,7 @@ casita-familia/
 | Reward | rewards | cost_points, active | |
 | Redemption | redemptions | status | Canjes |
 | FinanceEntry | finance_entries | kind, category, amount, occurred_on, provider, payment_status, due_date, period_*, reference_number, concept, receipt_* | Ingresos/gastos + recibos |
-| Lead | leads | name, email, phone, message, email_sent | Formulario público de interés |
+| Lead | leads | nombre, email, telefono, servicios, respuestas, propuesta, estado, enviado_at | Tabla ya existente; form web mapea name→nombre |
 
 ---
 
@@ -165,4 +165,4 @@ Archivo: `apps/api/src/lib/catalogs.js`
 | T-04 | Módulo Finanzas: CRUD, totales, filtros, gráficas, tabla finance_entries |
 | T-05 | Recibos: migración campos+Storage, analyze/confirm OpenAI, revisión UI, dashboard pendiente/vencidos |
 | T-06 | Correos Resend: lib/email, /api/emails, welcome al crear miembro, invite + send recordatorio |
-| T-07 | Formulario leads en AuthView + tabla leads + POST /api/leads con correo Resend |
+| T-07 | Formulario leads en AuthView + POST /api/leads (mapeo a tabla leads existente) + correo Resend |
