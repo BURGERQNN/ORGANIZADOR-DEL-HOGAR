@@ -1,6 +1,6 @@
 # PROJECT_CONTEXT.md
 > Contexto persistente. Actualizar al terminar cada ticket.
-> Última actualización: 2026-08-13 | Ticket: T-06 correos Resend
+> Última actualización: 2026-08-13 | Ticket: T-07 formulario leads + correo
 
 ---
 
@@ -58,6 +58,7 @@ casita-familia/
 | Reward | rewards | cost_points, active | |
 | Redemption | redemptions | status | Canjes |
 | FinanceEntry | finance_entries | kind, category, amount, occurred_on, provider, payment_status, due_date, period_*, reference_number, concept, receipt_* | Ingresos/gastos + recibos |
+| Lead | leads | name, email, phone, message, email_sent | Formulario público de interés |
 
 ---
 
@@ -93,6 +94,7 @@ casita-familia/
 | POST | /api/emails/send | Correo libre (to/subject/html|text) | admin |
 | POST | /api/emails/invite | Envía código de invitación del hogar | home (no invitado) |
 | POST | /api/reminders/:id/send | Envía recordatorio por correo → status enviado | home (no invitado) |
+| POST | /api/leads | Guarda lead + notifica correo a LEADS_NOTIFY_EMAIL | público |
 
 ---
 
@@ -148,6 +150,7 @@ Archivo: `apps/api/src/lib/catalogs.js`
 - Fotos JPG/PNG: requieren OpenAI Vision.
 - `OPENAI_API_KEY` solo en backend (`apps/api/.env`), nunca en Vite.
 - `RESEND_API_KEY` / `RESEND_FROM_EMAIL` solo en backend; sin key el alta de miembros sigue funcionando (sin correo).
+- Leads: `POST /api/leads` es público; notificación a `LEADS_NOTIFY_EMAIL` (default burgerqnn@gmail.com en pruebas Resend).
 - Anti-duplicado: referencia / proveedor + periodo + importe; confirm con `force: true` si el usuario insiste.
 
 ---
@@ -162,3 +165,4 @@ Archivo: `apps/api/src/lib/catalogs.js`
 | T-04 | Módulo Finanzas: CRUD, totales, filtros, gráficas, tabla finance_entries |
 | T-05 | Recibos: migración campos+Storage, analyze/confirm OpenAI, revisión UI, dashboard pendiente/vencidos |
 | T-06 | Correos Resend: lib/email, /api/emails, welcome al crear miembro, invite + send recordatorio |
+| T-07 | Formulario leads en AuthView + tabla leads + POST /api/leads con correo Resend |

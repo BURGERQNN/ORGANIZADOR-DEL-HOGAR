@@ -85,6 +85,39 @@ export function reminderEmail({ title, remindAt, homeName }) {
   return { subject, html, text };
 }
 
+export function leadNotifyEmail({ name, email, phone, message }) {
+  const subject = `Nuevo lead Casita: ${name}`;
+  const text = [
+    "Nuevo lead desde Casita",
+    `Nombre: ${name}`,
+    `Correo: ${email}`,
+    phone ? `Teléfono: ${phone}` : null,
+    message ? `Mensaje: ${message}` : null,
+  ]
+    .filter(Boolean)
+    .join("\n");
+  const html = `
+    <div style="font-family:system-ui,sans-serif;line-height:1.5;color:#1a1a1a">
+      <h1 style="font-size:20px">Nuevo lead</h1>
+      <p>Alguien dejó sus datos en Casita Familia.</p>
+      <p><strong>Nombre:</strong> ${escapeHtml(name)}<br/>
+      <strong>Correo:</strong> ${escapeHtml(email)}<br/>
+      ${phone ? `<strong>Teléfono:</strong> ${escapeHtml(phone)}<br/>` : ""}
+      ${message ? `<strong>Mensaje:</strong> ${escapeHtml(message)}` : ""}</p>
+    </div>
+  `;
+  return { subject, html, text };
+}
+
+/** Destinatario de notificaciones de leads (cuenta Resend en pruebas). */
+export function getLeadsNotifyEmail() {
+  return (
+    process.env.LEADS_NOTIFY_EMAIL?.trim() ||
+    process.env.RESEND_NOTIFY_EMAIL?.trim() ||
+    "burgerqnn@gmail.com"
+  );
+}
+
 function escapeHtml(value) {
   return String(value ?? "")
     .replaceAll("&", "&amp;")
