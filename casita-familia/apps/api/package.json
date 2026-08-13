@@ -15,6 +15,7 @@
     "multer": "^2.2.0",
     "openai": "^7.4.0",
     "pdf-parse": "^2.4.5",
+    "resend": "^6.19.0",
     "zod": "^3.24.2"
   },
   "devDependencies": {

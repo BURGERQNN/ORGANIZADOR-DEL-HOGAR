@@ -1,6 +1,6 @@
 # PROJECT_CONTEXT.md
 > Contexto persistente. Actualizar al terminar cada ticket.
-> Última actualización: 2026-08-11 | Ticket: T-05 recibos OCR OpenAI
+> Última actualización: 2026-08-13 | Ticket: T-06 correos Resend
 
 ---
 
@@ -11,6 +11,7 @@
 - Base de datos / Auth: Supabase project `bvarujfbnhfapzfmffue` (`https://bvarujfbnhfapzfmffue.supabase.co`)
 - Storage: bucket privado `receipts`
 - IA: OpenAI (`gpt-4o-mini`) via `OPENAI_API_KEY` en `apps/api/.env`
+- Email: Resend via `RESEND_API_KEY` + `RESEND_FROM_EMAIL` en `apps/api/.env`
 - Estilos: CSS variables (sin Tailwind)
 - Gestor de paquetes: npm
 - Deploy: pendiente
@@ -27,6 +28,7 @@ casita-familia/
         index.js
         lib/
           catalogs.js
+          email.js
           receipt-ai.js
           receipt-storage.js
           supabase.js
@@ -87,6 +89,10 @@ casita-familia/
 | POST | /api/finance/receipts/analyze | Sube PDF/imagen, OCR OpenAI, **no guarda gasto** | home (no invitado) |
 | POST | /api/finance/receipts/confirm | Tras revisión: crea gasto + mueve comprobante; anti-duplicado | home (no invitado) |
 | GET | /api/finance/:id/receipt | URL firmada del comprobante | home |
+| GET | /api/emails/status | Si Resend está configurado | auth |
+| POST | /api/emails/send | Correo libre (to/subject/html|text) | admin |
+| POST | /api/emails/invite | Envía código de invitación del hogar | home (no invitado) |
+| POST | /api/reminders/:id/send | Envía recordatorio por correo → status enviado | home (no invitado) |
 
 ---
 
@@ -97,6 +103,16 @@ casita-familia/
 | AuthView | views/AuthView.svelte | Login/registro |
 | HomeView | views/HomeView.svelte | Dashboard hogar |
 | FinanceView | views/FinanceView.svelte | Finanzas + subir/revisar recibos |
+
+---
+
+## Servicios y lógica de negocio
+
+| Servicio | Archivo | Qué maneja |
+|---------|---------|-----------|
+| email | apps/api/src/lib/email.js | Resend: sendEmail + plantillas welcome/invite/reminder |
+| receipt-ai | apps/api/src/lib/receipt-ai.js | OCR/extracción recibos |
+| receipt-storage | apps/api/src/lib/receipt-storage.js | Storage bucket receipts |
 
 ---
 
@@ -131,6 +147,7 @@ Archivo: `apps/api/src/lib/catalogs.js`
 - PDF con texto: se lee con `pdf-parse` + heurísticas **sin OpenAI**; si hay `OPENAI_API_KEY`, se mejora con IA.
 - Fotos JPG/PNG: requieren OpenAI Vision.
 - `OPENAI_API_KEY` solo en backend (`apps/api/.env`), nunca en Vite.
+- `RESEND_API_KEY` / `RESEND_FROM_EMAIL` solo en backend; sin key el alta de miembros sigue funcionando (sin correo).
 - Anti-duplicado: referencia / proveedor + periodo + importe; confirm con `force: true` si el usuario insiste.
 
 ---
@@ -144,3 +161,4 @@ Archivo: `apps/api/src/lib/catalogs.js`
 | T-03 | Fix auth: env unificada, register API con email_confirm, sin demo key en front |
 | T-04 | Módulo Finanzas: CRUD, totales, filtros, gráficas, tabla finance_entries |
 | T-05 | Recibos: migración campos+Storage, analyze/confirm OpenAI, revisión UI, dashboard pendiente/vencidos |
+| T-06 | Correos Resend: lib/email, /api/emails, welcome al crear miembro, invite + send recordatorio |

@@ -32,6 +32,7 @@
   });
   let newReminder = $state({ title: "", remind_at: "" });
   let newReward = $state({ title: "", cost_points: 50, description: "" });
+  let inviteEmailTo = $state("");
 
   async function loadAll() {
     if (!session.token || !session.profile?.home_id) return;
@@ -246,6 +247,46 @@
     }
   }
 
+  async function sendInviteEmail() {
+    error = null;
+    message = null;
+    if (!inviteEmailTo.trim()) return;
+    try {
+      if (useDemoMode) {
+        message = `Modo local: se simularía enviar invitación a ${inviteEmailTo}`;
+      } else {
+        await api("/api/emails/invite", {
+          method: "POST",
+          token: session.token,
+          body: JSON.stringify({ to: inviteEmailTo.trim() }),
+        });
+        message = `Invitación enviada a ${inviteEmailTo}`;
+      }
+      inviteEmailTo = "";
+    } catch (err) {
+      error = err instanceof Error ? err.message : "No se pudo enviar la invitación";
+    }
+  }
+
+  async function sendReminder(id: string) {
+    error = null;
+    message = null;
+    try {
+      if (useDemoMode) {
+        message = "Modo local: no se envían correos reales";
+      } else {
+        const res = await api<{ to: string }>(`/api/reminders/${id}/send`, {
+          method: "POST",
+          token: session.token,
+        });
+        message = `Recordatorio enviado a ${res.to}`;
+      }
+      await loadAll();
+    } catch (err) {
+      error = err instanceof Error ? err.message : "No se pudo enviar el recordatorio";
+    }
+  }
+
   function fmt(iso: string) {
     return new Date(iso).toLocaleString("es-MX", {
       dateStyle: "medium",
@@ -280,6 +321,14 @@
         <h2>Hola, {session.profile.display_name || "familia"}</h2>
         {#if homeInvite}
           <p class="muted">Código para invitar: <strong>{homeInvite}</strong></p>
+          {#if session.profile.role !== "invitado"}
+            <div class="form-row invite-mail">
+              <input type="email" placeholder="Enviar código por correo" bind:value={inviteEmailTo} />
+              <button class="primary" onclick={sendInviteEmail} disabled={!inviteEmailTo.trim()}>
+                Enviar invitación
+              </button>
+            </div>
+          {/if}
         {/if}
       </div>
       <div class="points">
@@ -358,6 +407,9 @@
                 <strong>{rem.title}</strong>
                 <span class="muted">{fmt(rem.remind_at)} · {rem.status}</span>
               </div>
+              {#if rem.status !== "enviado" && rem.status !== "cancelado" && session.profile.role !== "invitado"}
+                <button onclick={() => sendReminder(rem.id)}>Enviar correo</button>
+              {/if}
             </li>
           {:else}
             <li class="muted">Sin recordatorios</li>

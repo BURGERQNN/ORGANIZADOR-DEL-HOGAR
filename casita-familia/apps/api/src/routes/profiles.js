@@ -3,6 +3,7 @@ import { z } from "zod";
 import { supabaseAdmin } from "../lib/supabase.js";
 import { HOME_ROLES } from "../lib/catalogs.js";
 import { requireAuth, requireHome, requireRole } from "../middleware/auth.js";
+import { isEmailConfigured, sendEmail, welcomeMemberEmail } from "../lib/email.js";
 
 const router = Router();
 
@@ -132,10 +133,37 @@ router.post("/homes/members", requireAuth, requireHome, requireRole("admin"), as
     .single();
   if (profileErr) return res.status(500).json({ error: profileErr.message });
 
+  let emailSent = false;
+  let emailError = null;
+  if (isEmailConfigured) {
+    try {
+      const { data: home } = await supabaseAdmin
+        .from("homes")
+        .select("name")
+        .eq("id", req.profile.home_id)
+        .maybeSingle();
+      const tpl = welcomeMemberEmail({
+        displayName: parsed.data.display_name,
+        homeName: home?.name || "tu hogar",
+        email: parsed.data.email,
+        password: parsed.data.password,
+      });
+      await sendEmail({ to: parsed.data.email, ...tpl });
+      emailSent = true;
+    } catch (err) {
+      emailError = err.message || "No se pudo enviar el correo de bienvenida";
+      console.warn("[emails] welcome member:", emailError);
+    }
+  }
+
   res.status(201).json({
     member,
     email: parsed.data.email,
-    message: "Usuario creado. Puede iniciar sesión con el correo y la contraseña indicados.",
+    email_sent: emailSent,
+    email_error: emailError,
+    message: emailSent
+      ? "Usuario creado y correo de bienvenida enviado."
+      : "Usuario creado. Puede iniciar sesión con el correo y la contraseña indicados.",
   });
 });
 

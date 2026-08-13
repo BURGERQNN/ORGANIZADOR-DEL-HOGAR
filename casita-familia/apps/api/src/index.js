@@ -7,6 +7,7 @@ import remindersRouter from "./routes/reminders.js";
 import rewardsRouter from "./routes/rewards.js";
 import authRouter from "./routes/auth.js";
 import financeRouter from "./routes/finance.js";
+import emailsRouter from "./routes/emails.js";
 
 const app = express();
 const port = Number(process.env.PORT || 4000);
@@ -29,6 +30,7 @@ app.use("/api", profilesRouter);
 app.use("/api/events", eventsRouter);
 app.use("/api/reminders", remindersRouter);
 app.use("/api/rewards", rewardsRouter);
+app.use("/api/emails", emailsRouter);
 
 app.use((err, _req, res, _next) => {
   console.error(err);
